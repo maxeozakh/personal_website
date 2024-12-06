@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>maxeozakh - December Adventure</title>
+  </head>
+  <style>
+    body {
+      font-size: 1.5em;
+    }
+
+    pre {
+      background-color: #f4f4f4;
+      overflow-x: auto;
+      padding: 1em;
+    }
+
+    li:not(:last-child) {
+      margin-bottom: 10px;
+    }
+    img {
+      max-width: 100%;
+    }
+
+    .logic-table-image {
+      margin-top: 5px;
+    }
+
+    code {
+      font-size: 1em;
+      color: #4f1403;
+    }
+
+    summary {
+      cursor: pointer;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        font-size: 2em;
+      }
+    }
+  </style>
+  <body>
+    <main>
+      <article id="about">
+        <h3>December Adventure, what is it?</h3>
+        <p>
+          And if you can believe it..it's an
+          <a href="https://eli.li/december-adventure">ADVENTURE! ✶</a> in the
+          domain of coding. The idea is to write some code every day during the
+          upcoming month. Low key, just a little..
+        </p>
+        <p>
+          My thing will be learning about machines like Turing or Boltzmann ones
+          (not sure that I'll be able to grasp the second one though), and
+          prototyping my interpretations of how they work via code snippets.
+          Probably in Python, to keep things simple?
+        </p>
+      </article>
+      <hr />
+      <article id="20245">
+        <h3>Day 5 - Better yt home page</h3>
+        <p>
+          Today is off-topic. Didn't write it today, publishing tho.. The
+          YouTube home page is annoying; the subscriptions page is better. This
+          little script-chrome-extension helps me fight my addiction a ton. To
+          load this thing into Chrome locally:
+        </p>
+        <ul>
+          <li>Open Chrome and navigate to <code>chrome://extensions/</code></li>
+          <li>
+            Enable "Developer mode", click "Load unpacked", and select the
+            directory with the code from below
+          </li>
+        </ul>
+        <details>
+          <summary>Clickbait</summary>
+          <p>background.js</p>
+          <pre>
+            <code>
+chrome.webNavigation.onCommitted.addListener(
+  function (details) {
+    let url = new URL(details.url);
+    if (
+      url.href === "https://www.youtube.com/" &&
+      !url.href.includes("feed") &&
+      details.transitionType === "typed" &&
+      details.documentLifecycle === "active"
+    ) {
+      const newUrl = `${url.origin}/feed/subscriptions`;
+      chrome.tabs.update(details.tabId, { url: newUrl });
+    }
+  },
+  { url: [{ urlMatches: "youtube.com" }] }
+);
+          </code>
+        </pre>
+          <p>manifest.json</p>
+          <pre>
+          <code>
+{
+  "manifest_version": 3,
+  "name": "reDIRECTOR 3000",
+  "version": "1.0",
+  "permissions": ["tabs", "webNavigation"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
+          </code>
+        </pre>
+        </details>
+      </article>
+      <hr />
+      <article id="20244">
+        <h3>Day 4 - Interpreter World</h3>
+        <p>
+          Thought about an interpreter a little. Basically, to migrate a Regular
+          Turing machine to Universal one, I need to only move instructions from
+          the Machine to the tape level, and write some kind of parser for those
+          instructions, like: "this is the separator between different
+          instructions, this is how to deconstruct an instruction into its
+          logical parts like <code>action</code>, <code>next_state</code>, etc."
+          Would I like to implement it?
+        </p>
+        <pre>
+<code>
+def interpreter(data):
+  [instuction, value1, value2] = data
+  if instuction == 'СЛОЖИ':
+    return value1 + value2
+
+  return 'cant interpret it'
+
+interpreter(['СЛОЖИ', 2, 2]) # 5
+</code>
+        </pre>
+      </article>
+      <hr />
+      <article id="20243">
+        <h3>Day 3 - Demonstration of internals</h3>
+        <p>matplotlib? Graphviz? Just print..</p>
+        <img
+          src="./machine_internals.gif"
+          alt="visualisation of the internal state (variables) of the turing machine implementation from the prev day"
+        />
+        <details>
+          <summary>Click (better don't)</summary>
+          <pre>
+<code>
+def visualizer(logs):
+  print(f"""       
+           ✶ the MACHINE state
+           """)
+  time.sleep(2.5)
+  for i, log in enumerate(logs):
+    [
+      state,
+      condition,
+      action,
+      value,
+      next_state,
+      move_to,
+      awareness,
+      tape
+    ] = log
+
+    timer_value = 0.1 if awareness != condition else .7
+    timer_value2 = 0.1 if awareness != condition else .5
+
+    thing = f"""    ┌────────────────────────────────────────────────────
+    │    
+    │    match?: {awareness == condition}   
+    │    condition: {condition}               
+    │    awareness: {awareness}   
+    │    state: {state}                   
+    │    action: {action}             
+    │    value: {value}             
+    │    move_to: {move_to}         
+    │    next_state: {next_state}   
+    │    
+    │    tape: {tape}   
+    │    
+    └────────────────────────────────────────────"""
+    print(thing)
+    time.sleep(timer_value)
+    if i != (len(logs) - 1):
+      print(f"""                    ↓         """)
+    time.sleep(timer_value2)
+
+visualizer(logs)  
+</code>
+          </pre>
+        </details>
+      </article>
+      <hr />
+      <article id="20242">
+        <h3>Day 2 - The "Regular" Turing Machine</h3>
+        <p>
+          "Universal" is cool, but I feel an urge to read something about
+          interpreters first before trying to write one on my own. Meanwhile
+          I've implemented a chill version
+        </p>
+        <details>
+          <summary>Shiny symbols</summary>
+          <pre>
+<code>
+from typing import List, Union, Literal, TypedDict, Dict
+
+def machine(tape: List) -> List:
+    # "The symbol on the scanned square may be called the 'scanned symbol'
+    # The 'scanned symbol' is the only one of which the machine is,
+    # so to speak, 'directly aware'."
+    awareness = 0
+
+    state: Union[int, Literal["HALT"]] = 0
+
+    class Action(TypedDict):
+        move: List
+        action: Literal["WRITE", "ERASE", "NONE"]
+        value: Union[int, str, None]
+
+    class Instruction(TypedDict):
+        cond: Union[int, str, None]
+        do: Action
+        next_state: Union[int, Literal["HALT"]]
+
+    instructions: Dict[int, List[Instruction]] = {
+        0: [ {"cond": 0, "do": {"move": ["r", 0], "action": "NONE", "value": None}, "next_state": 2},
+              {"cond": 1, "do": {"move": ["r", 0], "action": "ERASE", "value": None}, "next_state": 1} ],
+        1: [ {"cond": None, "do": {"move": ["r", 0], "action": "WRITE", "value": "f"}, "next_state": 1},
+              {"cond": "f", "do": {"move": ["r", 1], "action": "WRITE", "value": "l"}, "next_state": 1},
+              {"cond": "l", "do": {"move": ["r", 1], "action": "WRITE", "value": "o"}, "next_state": 1},
+              {"cond": "o", "do": {"move": ["r", 1], "action": "WRITE", "value": "w"}, "next_state": 1},
+              {"cond": "w", "do": {"move": ["r", 1], "action": "WRITE", "value": "e"}, "next_state": 1},
+              {"cond": "e", "do": {"move": ["r", 1], "action": "WRITE", "value": "r"}, "next_state": 1},
+              {"cond": "r", "do": {"move": ["r", 1], "action": "NONE", "value": None}, "next_state": "HALT"} ],
+        2: [ {"cond": 0, "do": {"move": ["r", 0], "action": "NONE", "value": None}, "next_state": "HALT"} ]
+    }
+
+    while state != "HALT":
+        current_instructions = instructions[state]
+        for instruction in current_instructions:
+            condition = instruction["cond"]
+            thing_to_do = instruction["do"]
+            action = thing_to_do["action"]
+            value = thing_to_do["value"]
+            next_state = instruction["next_state"]
+            move_to = thing_to_do["move"]
+
+            if tape[awareness] != condition:
+                continue
+
+            [direction, step] = move_to
+            if direction == "r":
+                next_awareness = awareness + step
+            else:
+                next_awareness = awareness - step
+
+            awareness = next_awareness
+
+            if action == "WRITE":
+                tape[awareness] = value
+            elif action == "ERASE":
+                tape[awareness] = None
+
+            state = next_state
+            break  # Exit the for-loop after executing the instruction
+
+    return tape
+
+# I don't want to implement self-expanding data structure, since it's 
+# feels less closer to the real machine, so Noneonneoneoe 
+the_tape = [1, None, None, None, None, None]
+
+machine(the_tape)
+</code>
+        </pre>
+        </details>
+        <p>
+          It doesn't do anything fancy, and it's not even binary-encoded. It
+          just does stuff (erases the first symbol and writes "flower" into the
+          tape) if tape starts with 1, and does nothing if it starts from 0.
+          Super simple, but it encapsulates(?) the whole concept of Turing
+          Machine. Key components:
+        </p>
+        <ul>
+          <li>
+            <b>Tape</b> - in the physical representation of a Turing Machine,
+            the tape is divided into cells, each capable of holding a symbol. We
+            have an array instead
+          </li>
+          <li>
+            <b>Tape head</b> aka <b>awareness</b> - a head that moves along the
+            tape and reads symbols. In our case it's just an index pointer
+          </li>
+          <li>
+            <b>Set of states</b> - the machine can be in one of a finite number
+            of states, including a special "HALT" aka termination state. Here we
+            have 0 - initial state, 1 for main "flower" logic, 2 for example of
+            branching, and "HALT" to stop the thing
+          </li>
+          <li>
+            <b>Transition Function</b> aka <b>instuctions </b> - conceptually
+            it's a table with conditions <code>IF</code>, actions
+            <code>ACTION</code> and the next state <code>STATE</code>. In my
+            code snippet we have <code>cond</code>, <code>do</code> and
+            <code>next_state</code>. It's a bit odd that
+            <code>ACTION/do</code> combines both writing/erasing and moving, but
+            who cares<br />
+            <img
+              class="logic-table-image"
+              alt="logic table on the peace of paper"
+              src="./dither_it_logic_table.png"
+            />
+          </li>
+        </ul>
+      </article>
+      <hr />
+      <article id="20241">
+        <h3>Day 1 - Intro to Turing machines</h3>
+        <p>You step onto the road, keep your feet.</p>
+        <p>
+          There are two types of Turing machines, "Regular" and "Universal". At
+          first I thought about them as "just a function" and "high-order
+          function which executes other functions". Well, not exactly right on
+          an abstraction level. A closer analogy would be "hardcoded function"
+          vs "programming language interpreter".
+        </p>
+        <p>
+          The main difference between these two machines is that "Regular" one
+          contains instructions for a specific task AND those instructions are
+          considered as part of the machine itself. "Universal" one does not
+          contain instructions for a specific task, it reads them from the data
+          itself.
+        </p>
+        <details>
+          <summary>Code is here</summary>
+          <pre>
+<code>
+def regular(data):
+    # Fixed set of instructions (part of the machine itself)
+    instructions = {"reverse": lambda x: x[::-1]}
+
+    result = instructions["reverse"](data)
+    return result
+
+def universal(data):
+    for thing in data:
+        [instruction, variable] = thing
+        instruction(variable)
+    return
+</code>
+          </pre>
+        </details>
+        <p>
+          "Universal" is a chef in a restaurant (any recipe - any dish),
+          "Regular" is a person who is trained to do french fries only (one
+          recipe one french fry, forever, french fries universe)
+        </p>
+        <a
+          href="https://mxz.sh/on_computable_numbers_with_an_application_to_the_entscheidungsproblem.pdf"
+          >Original paper by Alan Turing</a
+        >
+        <br />
+        <a href="https://youtu.be/-ZS_zFg4w5k?si=QE8N15T1sTYMqn1t"
+          >Nice little video about subject
+        </a>
+      </article>
+      <br />
+    </main>
+  </body>
+</html>
